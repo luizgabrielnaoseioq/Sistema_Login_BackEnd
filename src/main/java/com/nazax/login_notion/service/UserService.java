@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService{
@@ -28,10 +29,16 @@ public class UserService{
     }
 
     @Transactional(readOnly = true)
-    public UserDTO findById(Long id){
-        return userRepository.findById(id)
-                .map(this::toDTO)
-                .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+    public UserDTO getUserById(Long id) {
+        Optional<User> userOptional = userRepository.findById(id);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();  // Pega a entidade User
+            return new UserDTO(user.getEmail(), user.getName(), user.getPassword());  // Retorna o DTO
+        } else {
+            // Caso não encontre o usuário
+            throw new RuntimeException("Usuário não encontrado");  // Pode lançar uma exceção ou retornar um valor nulo
+        }
     }
 
     // Criação
