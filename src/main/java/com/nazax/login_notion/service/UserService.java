@@ -11,11 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
-public class UserSerivice{
+public class UserService{
 
     private final UserRepository userRepository;
 
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     // Busca
     @Transactional(readOnly = true)
@@ -33,11 +35,20 @@ public class UserSerivice{
     }
 
     // Criação
-    public UserDTO createUser(UserDTO userDTO){
-        User user = toEntity(userDTO);
+    public UserDTO createUser(UserDTO userDTO) {
+        // Converter o DTO para a entidade User
+        User user = new User();
+        user.setEmail(userDTO.getEmail());
+        user.setName(userDTO.getName());
+        user.setPassword(userDTO.getPassword());
+
+        // Persistir no banco de dados
         user = userRepository.save(user);
-        return toDTO(user);
+
+        // Após salvar, converter a entidade de volta para o DTO
+        return new UserDTO(user.getEmail(), user.getName(), user.getPassword());
     }
+
 
     // Atualização
     @Transactional(readOnly = true)
@@ -64,10 +75,9 @@ public class UserSerivice{
 
     // Auxiliares de conversão
     private UserDTO toDTO(User user){
-        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getPassword());
+        return new  UserDTO(user.getId(), user.getEmail(), user.getName(), user.getPassword());
     }
-
     private User toEntity(UserDTO dto){
-        return new User(dto.getEmail(), dto.getName());
+        return new User(dto.getEmail(), dto.getName(), dto.getPassword()); // Supondo que o User tenha password
     }
 }

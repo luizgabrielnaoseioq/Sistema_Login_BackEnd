@@ -17,6 +17,6 @@ public class User {
     private String email;
     private String password;
 
-    public User(String email, String name) {
+    public User(String email, String name, String password) {
     }
 }
