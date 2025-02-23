@@ -8,8 +8,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService{
@@ -21,11 +24,17 @@ public class UserService{
     }
 
     // Busca
-    @Transactional(readOnly = true)
-    public List<UserDTO> findAll(){
-        return userRepository.findAll().stream()
-                .map(this::toDTO)
-                .toList();
+    public List<UserDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();  // Buscar todos os usuários
+
+        if (users == null || users.isEmpty()) {
+            return Collections.emptyList();  // Retorna uma lista vazia, nunca nula
+        }
+
+        // Converte a lista de usuários para DTOs
+        return users.stream()
+                .map(user -> new UserDTO(user.getEmail(), user.getName(), user.getPassword()))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

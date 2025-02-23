@@ -23,9 +23,13 @@ public class UserController {
 
     // Busca
     @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers(Long id){
-        List<UserDTO> user = userService.findAll();
-        return ResponseEntity.ok(user);
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        try {
+            List<UserDTO> users = userService.getAllUsers(); // Chama o método no serviço
+            return ResponseEntity.status(HttpStatus.OK).body(users);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);  // Caso ocorra algum erro
+        }
     }
 
     @GetMapping("/{id}")
