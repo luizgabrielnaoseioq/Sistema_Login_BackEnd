@@ -67,33 +67,37 @@ public class UserService{
 
 
     // Atualização
-    @Transactional(readOnly = true)
-    public UserDTO updateUser(Long id, UserDTO userDTO){
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+    @Transactional
+    public UserDTO updateUser(Long id, UserDTO userDTO) {
+        System.out.println("Atualizando usuário com ID: " + id);  // Log para depuração
+        Optional<User> userOptional = userRepository.findById(id);
 
-        user.setName(userDTO.getName());
+        if (!userOptional.isPresent()) {
+            throw new EntityNotFoundException("Usuário não encontrado");
+        }
+
+        User user = userOptional.get();
         user.setEmail(userDTO.getEmail());
+        user.setName(userDTO.getName());
+        user.setPassword(userDTO.getPassword());
 
+        System.out.println("Dados antes da atualização: " + user);  // Log antes de salvar
         user = userRepository.save(user);
+        System.out.println("Dados após a atualização: " + user);  // Log após salvar
 
-        return toDTO(user);
+        return new UserDTO(user.getEmail(), user.getName(), user.getPassword());
     }
+
 
     // Deletar
     @Transactional
-    public void deleteUser(Long id){
-        if (!userRepository.existsById(id)){
-            throw new EntityNotFoundException("User not found!");
-        }
-        userRepository.deleteById(id);
-    }
+    public void deleteUser(Long id) {
+        Optional<User> userOptional = userRepository.findById(id);
 
-    // Auxiliares de conversão
-    private UserDTO toDTO(User user){
-        return new  UserDTO(user.getId(), user.getEmail(), user.getName(), user.getPassword());
-    }
-    private User toEntity(UserDTO dto){
-        return new User(dto.getEmail(), dto.getName(), dto.getPassword()); // Supondo que o User tenha password
+        if (!userOptional.isPresent()) {
+            throw new RuntimeException("Usuário não encontrado");  // Lança uma exceção se o usuário não existir
+        }
+
+        userRepository.deleteById(id);  // Deleta o usuário com o ID especificado
     }
 }

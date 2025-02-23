@@ -2,6 +2,7 @@ package com.nazax.login_notion.controller;
 
 import com.nazax.login_notion.dto.UserDTO;
 import com.nazax.login_notion.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,7 @@ public class UserController {
     }
 
     // Busca
-    @GetMapping
+    @GetMapping("/findAll")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         try {
             List<UserDTO> users = userService.getAllUsers(); // Chama o método no serviço
@@ -43,7 +44,7 @@ public class UserController {
     }
 
     // Criar
-    @PostMapping
+    @PostMapping("/criar")
     public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO UserDTO) {
         logger.info("Recebido: {}", UserDTO);
 
@@ -64,9 +65,25 @@ public class UserController {
     }
 
     // Atualizar
-    @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateProduct(@PathVariable Long id, @Valid @RequestBody UserDTO UserDTO) {
-        UserDTO updatedProduct = userService.updateUser(id, UserDTO);
-        return ResponseEntity.ok(updatedProduct);
+    @PutMapping("/update/{id}")
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDTO) {
+        try {
+            UserDTO updatedUser = userService.updateUser(id, userDTO);  // Chama o método de atualização no serviço
+            return ResponseEntity.status(HttpStatus.OK).body(updatedUser);  // Retorna o usuário atualizado
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // Caso não encontre o usuário
+        }
+
+    }
+
+    // Deletar
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(id);  // Chama o método de deleção no serviço
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();  // Retorna status 204 (Sem Conteúdo) se a deleção for bem-sucedida
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // Caso o usuário não seja encontrado
+        }
     }
 }
