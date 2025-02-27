@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
+
+    private Long id;
     @NotEmpty(message = "Name é obrigatório")
     private String name;
     @NotEmpty(message = "Email é obrigatório")
@@ -16,9 +18,6 @@ public class UserDTO {
     @NotEmpty(message = "Senha é obrigatória")
     private String password;
 
-    public UserDTO(Long id, String name, String email, String password) {
-    }
-
-    public UserDTO(String erroAoCriarUsuário) {
+    public UserDTO(String email, String name, String password, Long id) {
     }
 }
