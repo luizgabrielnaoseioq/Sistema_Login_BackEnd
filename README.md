@@ -63,7 +63,7 @@ Aqui estão os endpoints disponíveis na API do sistema de login:
     - **Exemplo de requisição**:
 
       ```bash
-      POST http://localhost:8080/api/user/criar
+      POST http://localhost:8080/api/user
       Content-Type: application/json
       Body:
       {
@@ -85,11 +85,11 @@ Aqui estão os endpoints disponíveis na API do sistema de login:
 
 2. **Buscar todos os usuários**:
     - **Método**: `GET`
-    - **Rota**: `/api/user/findAll`
+    - **Rota**: `/api/user`
     - **Exemplo de requisição**:
 
       ```bash
-      GET http://localhost:8080/api/user/findAll
+      GET http://localhost:8080/api/user
       ```
 
     - **Resposta** (Status 200 - OK):
@@ -138,11 +138,11 @@ Aqui estão os endpoints disponíveis na API do sistema de login:
 
 4. **Atualizar um usuário**:
     - **Método**: `PUT`
-    - **Rota**: `/api/user/update/{id}`
+    - **Rota**: `/api/user/{id}`
     - **Exemplo de requisição**:
 
       ```bash
-      PUT http://localhost:8080/api/user/update/1
+      PUT http://localhost:8080/api/user/1
       Content-Type: application/json
       Body:
       {
@@ -164,11 +164,11 @@ Aqui estão os endpoints disponíveis na API do sistema de login:
 
 5. **Deletar um usuário**:
     - **Método**: `DELETE`
-    - **Rota**: `/api/user/delete/{id}`
+    - **Rota**: `/api/user/{id}`
     - **Exemplo de requisição**:
 
       ```bash
-      DELETE http://localhost:8080/api/user/delete/1
+      DELETE http://localhost:8080/api/user/1
       ```
 
     - **Resposta** (Status 204 - No Content): Não há corpo de resposta, apenas o código de status.
