@@ -1,55 +1,50 @@
 package com.nazax.login_notion.controller;
 
+import com.nazax.login_notion.dto.CreateUserDto;
+import com.nazax.login_notion.dto.LoginUserDto;
+import com.nazax.login_notion.dto.RecoveryJwtTokenDto;
 import com.nazax.login_notion.dto.UserDTO;
 import com.nazax.login_notion.entity.User;
 import com.nazax.login_notion.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/users")
 public class UserController {
 
-    private final UserService userService;
+    @Autowired
+    private UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    @PostMapping("/login")
+    public ResponseEntity<RecoveryJwtTokenDto> authenticateUser(@RequestBody LoginUserDto loginUserDto) {
+        RecoveryJwtTokenDto token = userService.authenticateUser(loginUserDto);
+        return new ResponseEntity<>(token, HttpStatus.OK);
     }
 
-    // Buscar todos os usuários
-    @GetMapping
-    public ResponseEntity<List<UserDTO>> findAll() {
-        return ResponseEntity.ok(userService.getAllUsers());
-    }
-
-    // Buscar usuário por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
-    }
-
-    // Criar usuário
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
-        return ResponseEntity.ok(userService.createUser(userDTO));
+    public ResponseEntity<Void> createUser(@RequestBody CreateUserDto createUserDto) {
+        userService.createUser(createUserDto);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
-        try {
-            UserDTO updatedUser = userService.update(id, userDTO);
-            return ResponseEntity.ok(updatedUser);
-        } catch (RuntimeException e) { // Captura erro caso o ID não exista
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/test")
+    public ResponseEntity<String> getAuthenticationTest() {
+        return new ResponseEntity<>("Autenticado com sucesso", HttpStatus.OK);
     }
 
-    // Deletar usuário
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.delete(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/test/customer")
+    public ResponseEntity<String> getCustomerAuthenticationTest() {
+        return new ResponseEntity<>("Cliente autenticado com sucesso", HttpStatus.OK);
     }
+
+    @GetMapping("/test/administrator")
+    public ResponseEntity<String> getAdminAuthenticationTest() {
+        return new ResponseEntity<>("Administrador autenticado com sucesso", HttpStatus.OK);
+    }
+
 }

@@ -1,66 +1,65 @@
 package com.nazax.login_notion.service;
 
-import com.nazax.login_notion.dto.UserDTO;
+import com.nazax.login_notion.dto.CreateUserDto;
+import com.nazax.login_notion.dto.LoginUserDto;
+import com.nazax.login_notion.dto.RecoveryJwtTokenDto;
+import com.nazax.login_notion.entity.Role;
 import com.nazax.login_notion.entity.User;
 import com.nazax.login_notion.repository.UserRepository;
-import com.nazax.login_notion.service.mapper.UserMapper;
+import com.nazax.login_notion.security.authentication.JwtTokenService;
+import com.nazax.login_notion.security.config.SecurityConfiguration;
+import com.nazax.login_notion.security.userdetails.UserDetailsImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
+    @Autowired
+    private JwtTokenService jwtTokenService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private SecurityConfiguration securityConfiguration;
+
+    // Método responsável por autenticar um usuário e retornar um token JWT
+    public RecoveryJwtTokenDto authenticateUser(LoginUserDto loginUserDto) {
+        // Cria um objeto de autenticação com o email e a senha do usuário
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                new UsernamePasswordAuthenticationToken(loginUserDto.email(), loginUserDto.password());
+
+        // Autentica o usuário com as credenciais fornecidas
+        Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+
+        // Obtém o objeto UserDetails do usuário autenticado
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        // Gera um token JWT para o usuário autenticado
+        return new RecoveryJwtTokenDto(jwtTokenService.generateToken(userDetails));
     }
 
-    // Buscar todos os usuários
-    public List<UserDTO> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toDTO)
-                .toList();
-    }
+    // Método responsável por criar um usuário
+    public void createUser(CreateUserDto createUserDto) {
 
-    // Buscar um usuário por ID
-    public UserDTO getUserById(Long id) {
-        return userRepository.findById(id)
-                .map(userMapper::toDTO)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado!"));
-    }
+        // Cria um novo usuário com os dados fornecidos
+        User newUser = User.builder()
+                .email(createUserDto.email())
+                // Codifica a senha do usuário com o algoritmo bcrypt
+                .password(securityConfiguration.passwordEncoder().encode(createUserDto.password()))
+                // Atribui ao usuário uma permissão específica
+                .roles(List.of(Role.builder().name(createUserDto.role()).build()))
+                .build();
 
-    // Criar usuário
-    @Transactional
-    public UserDTO createUser(UserDTO userDTO) {
-        User user = userMapper.toEntity(userDTO);
-        User savedUser = userRepository.save(user);
-        return userMapper.toDTO(savedUser);
-    }
-
-    // Atualizar um usuário
-    @Transactional
-    public UserDTO update(Long id, UserDTO userDTO) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado!"));
-
-        user.setName(userDTO.getName());
-        user.setEmail(userDTO.getEmail());
-        user.setPassword(userDTO.getPassword());
-
-        User updatedUser = userRepository.save(user);
-        return userMapper.toDTO(updatedUser);
-    }
-
-    // Deletar usuário
-    @Transactional
-    public void delete(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("Usuário não encontrado para exclusão!");
-        }
-        userRepository.deleteById(id);
+        // Salva o novo usuário no banco de dados
+        userRepository.save(newUser);
     }
 }
