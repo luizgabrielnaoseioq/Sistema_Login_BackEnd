@@ -3,57 +3,50 @@ package com.nazax.login_notion.service;
 import com.nazax.login_notion.dto.UserDTO;
 import com.nazax.login_notion.entity.User;
 import com.nazax.login_notion.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import com.nazax.login_notion.service.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
-public class UserService{
+public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    @Transactional(readOnly = true)
-    public UserDTO createUser(UserDTO userDTO) {
-        User user = userDTOToUser(userDTO);
-        User UserSaved = userRepository.save(user);
-        return userToUserDTO(UserSaved);
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
-    // Deletar
-    public void delete (Long id){
+    // Buscar todos os usuários
+    public List<UserDTO> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(userMapper::toDTO)
+                .toList();
+    }
+
+    // Buscar um usuário por ID
+    public UserDTO getUserById(Long id) {
+        return userRepository.findById(id)
+                .map(userMapper::toDTO)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado!"));
+    }
+
+    // Criar usuário
+    @Transactional
+    public UserDTO createUser(UserDTO userDTO) {
+        User user = userMapper.toEntity(userDTO);
+        User savedUser = userRepository.save(user);
+        return userMapper.toDTO(savedUser);
+    }
+
+    // Deletar usuário
+    @Transactional
+    public void delete(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("Usuário não encontrado para exclusão!");
+        }
         userRepository.deleteById(id);
     }
-
-    // Metodos auxiliares
-    public UserDTO userToUserDTO(User user) {
-        UserDTO dto = new UserDTO();
-        dto.setId(user.getId());
-        dto.setEmail(user.getEmail());
-        dto.setName(user.getName());
-        dto.setPassword(user.getPassword());
-        return dto;
-    }
-
-    public User userDTOToUser(UserDTO dto) {
-        User user = new User();
-        user.setEmail(dto.getEmail());
-        user.setName(dto.getName());
-        user.setPassword(dto.getPassword());
-        return user;
-    }
-
-//    private UserDTO toDTO(User user) {
-//        return new UserDTO(user.getEmail(), user.getName(), user.getPassword(), user.getId());
-//    }
-//
-//    private User toUser(UserDTO userDTO) {
-//        return new User(userDTO.getEmail(), userDTO.getName(), userDTO.getPassword());
-//    }
 }
