@@ -41,6 +41,20 @@ public class UserService {
         return userMapper.toDTO(savedUser);
     }
 
+    // Atualizar um usuário
+    @Transactional
+    public UserDTO update(Long id, UserDTO userDTO) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado!"));
+
+        user.setName(userDTO.getName());
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(userDTO.getPassword());
+
+        User updatedUser = userRepository.save(user);
+        return userMapper.toDTO(updatedUser);
+    }
+
     // Deletar usuário
     @Transactional
     public void delete(Long id) {

@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 public class UserMapper {
 
     public UserDTO toDTO(User user) {
-        return new UserDTO(user.getId(), user.getEmail(), user.getName(), user.getPassword());
+        // Se a ordem estiver errada o teste vai inverter na atualização kkkk
+        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getPassword());
     }
 
     public User toEntity(UserDTO dto) {

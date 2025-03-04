@@ -18,11 +18,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     private String email;
     private String name;
     private String password;
-
-    public User(@NotEmpty(message = "Email é obrigatório") String email, @NotEmpty(message = "Name é obrigatório") String name, @NotEmpty(message = "Senha é obrigatória") String password) {
-    }
 
 }
